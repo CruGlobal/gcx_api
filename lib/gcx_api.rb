@@ -12,7 +12,6 @@ module GcxApi
 
       self.gcx_url ||= 'https://wpdev.gcx.org'
       self.cas_url ||= 'https://casdev.gcx.org'
-      Base.site = site
     end
   end
 end

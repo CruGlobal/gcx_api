@@ -1,4 +1,4 @@
-require '../validators/gcx_site_name_validator'
+require File.expand_path("../../validators/gcx_site_name_validator", __FILE__)
 
 class GcxApi::Site
   include ActiveModel::Validations
@@ -7,8 +7,6 @@ class GcxApi::Site
 
   DEFAULTS = {privacy: 'public',
               theme: 'amped'}
-
-  alias_method :save, :create
 
   attr_accessor :name, :title, :privacy, :theme, :sitetype, :attributes
 
@@ -31,11 +29,11 @@ class GcxApi::Site
 
   def create
     parameters = attributes.to_json
-    ticket = GcxApi::Cas.get_cas_service_ticket(create_endpoint)
+    ticket = GcxApi::Cas.new.get_cas_service_ticket(create_endpoint)
 
     res = RestClient::Request.execute(:method => :post, :url => create_endpoint + '?ticket=' + ticket, :payload => parameters, :timeout => -1) { |response, request, result, &block|
-                                                                                                                                             ap request
-                                                                                                                                             ap result.inspect
+                                                                                                                                             Rails.logger.debug request
+                                                                                                                                             Rails.logger.debug result.inspect
                                                                                                                                               # check for error response
                                                                                                                                              if [301, 302, 307].include? response.code
                                                                                                                                                response.follow_redirection(request, result, &block)

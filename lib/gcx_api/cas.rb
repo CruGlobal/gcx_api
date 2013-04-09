@@ -1,16 +1,16 @@
 class GcxApi::Cas
 
   def initialize(username = GcxApi.cas_username, password = GcxApi.cas_password)
-    self.username = username
-    self.password = password
+    @username = username
+    @password = password
   end
 
   def get_cas_service_ticket(service_url)
-    parameters = {username: username,
-                  password: password}
+    parameters = {username: @username,
+                  password: @password}
     location = RestClient::Request.execute(:method => :post, :url => GcxApi.cas_url + "/cas/v1/tickets", :payload => parameters, :timeout => -1) { |res, request, result, &block|
                                             # check for error response
-                                            if response.code.to_i == 400
+                                            if res.code.to_i == 400
                                               raise res.inspect
                                             end
                                             res
@@ -19,7 +19,7 @@ class GcxApi::Cas
     parameters = {service: service_url}
     ticket = RestClient::Request.execute(:method => :post, :url => location, :payload => parameters, :timeout => -1) { |res, request, result, &block|
                                           # check for error response
-                                          if response.code.to_i != 200
+                                          if res.code.to_i != 200
                                             raise res.inspect
                                           end
                                           res
