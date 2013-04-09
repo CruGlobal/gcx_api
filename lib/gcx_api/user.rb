@@ -12,7 +12,9 @@ class GcxApi::User
     attr = {:method => :post, :url => service_url + '?ticket=' + ticket, :payload => parameters, :timeout => -1}
     Rails.logger.debug attr
     res = RestClient::Request.execute(:method => :post, :url => service_url + '?ticket=' + ticket, :payload => parameters, :timeout => -1) { |response, request, result, &block|
-                                      Rails.logger.debug request
+                                      Rails.logger.debug request.to_s
+                                      Rails.logger.debug response.to_s
+                                      Rails.logger.debug result.to_s
                                       # check for error response
                                       if response.code.to_i == 400
                                         raise response.inspect
