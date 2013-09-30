@@ -10,7 +10,7 @@ class GcxApi::Site
 
   attr_accessor :name, :title, :privacy, :theme, :sitetype, :attributes
 
-  validates :name, presence: true, gcx_site_name: true, format: /^[a-z][a-z0-9_\-]{2,79}$/i
+  validates :name, presence: true, gcx_site_name: true, format: /\A[a-z][a-z0-9_\-]{2,79}\z/i
   validates :title, presence: true
 
   def initialize(attributes = {})
