@@ -8,9 +8,9 @@ class GcxApi::Site
   DEFAULTS = {privacy: 'public',
               theme: 'amped'}
 
-  attr_accessor :name, :title, :privacy, :theme, :sitetype, :attributes
+  attr_accessor :name, :title, :privacy, :theme, :sitetype, :base_url, :attributes
 
-  validates :name, presence: true, gcx_site_name: true, format: /^[a-z][a-z0-9_\-]{2,79}$/i
+  validates :name, presence: true, gcx_site_name: true, format: /\A[a-z][a-z0-9_\-]{2,79}\z/i
   validates :title, presence: true
 
   def initialize(attributes = {})
@@ -32,15 +32,15 @@ class GcxApi::Site
     ticket = GcxApi::Cas.new.get_cas_service_ticket(create_endpoint)
 
     res = RestClient::Request.execute(:method => :post, :url => create_endpoint + '?ticket=' + ticket, :payload => parameters, :timeout => -1) { |response, request, result, &block|
-                                                                                                                                             Rails.logger.debug request
-                                                                                                                                             Rails.logger.debug result.inspect
-                                                                                                                                              # check for error response
-                                                                                                                                             if [301, 302, 307].include? response.code
-                                                                                                                                               response.follow_redirection(request, result, &block)
-                                                                                                                                             elsif response.code.to_i != 200
-                                                                                                                                               raise response.headers.inspect + response.inspect
-                                                                                                                                             end
-                                                                                                                                             response.to_str
+                                                                         Rails.logger.debug request
+                                                                         Rails.logger.debug result.inspect
+                                                                          # check for error response
+                                                                         if [301, 302, 307].include? response.code
+                                                                           response.follow_redirection(request, result, &block)
+                                                                         elsif response.code.to_i != 200
+                                                                           raise response.headers.inspect + response.inspect
+                                                                         end
+                                                                         response.to_str
     }
     community = JSON.parse(res)
     if community['errors']
@@ -49,6 +49,37 @@ class GcxApi::Site
       @persisted = true
       return self
     end
+  end
+
+  def set_option_values(options)
+    options_endpoint = GcxApi.gcx_url + '/' + name + '/index.php'
+
+    RestClient::Request.execute(:method => :post, :url => options_endpoint + '?key=' + GcxApi.key, :payload => options, :timeout => -1) { |response, request, result, &block|
+      Rails.logger.debug request
+      Rails.logger.debug result.inspect
+      # check for error response
+      if response.code.to_i != 200
+        raise response.headers.inspect + response.inspect
+      end
+      response.to_str
+    }
+  end
+
+
+  def destroy(site_name)
+    destroy_endpoint = GcxApi.gcx_url + "/#{site_name}/wp-gcx/delete-community.php"
+
+    ticket = GcxApi::Cas.new.get_cas_service_ticket(destroy_endpoint)
+
+    res = RestClient::Request.execute(:method => :post, :url => destroy_endpoint + '?ticket=' + ticket, :payload => {}, :timeout => -1) { |response, request, result, &block|
+                                                                           Rails.logger.debug request
+                                                                           Rails.logger.debug result.inspect
+                                                                            # check for error response
+                                                                           if response.code.to_i != 200
+                                                                             raise result.inspect
+                                                                           end
+                                                                           response.to_str
+    }
   end
 
   def persisted?
