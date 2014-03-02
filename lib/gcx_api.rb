@@ -1,7 +1,4 @@
 require 'rest-client'
-Dir[File.dirname(__FILE__) + '/gcx_api/*.rb'].each do |file|
-  require file
-end
 
 module GcxApi
   class << self
@@ -14,4 +11,8 @@ module GcxApi
       self.cas_url ||= 'https://casdev.gcx.org'
     end
   end
+end
+
+Dir[File.dirname(__FILE__) + '/gcx_api/*.rb'].each do |file|
+  require file
 end
