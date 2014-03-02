@@ -8,7 +8,7 @@ class GcxApi::Site
   DEFAULTS = {privacy: 'public',
               theme: 'amped'}
 
-  attr_accessor :name, :title, :privacy, :theme, :sitetype, :base_url, :attributes
+  attr_accessor :name, :title, :privacy, :theme, :sitetype, :domain, :attributes
 
   validates :name, presence: true, gcx_site_name: true, format: /\A[a-z][a-z0-9_\-]{2,79}\z/i
   validates :title, presence: true
@@ -52,9 +52,9 @@ class GcxApi::Site
   end
 
   def set_option_values(options)
-    options_endpoint = GcxApi.gcx_url + '/' + name + '/index.php'
+    options_endpoint = (domain || GcxApi.gcx_url) + '/' + name + '/index.php'
 
-    RestClient::Request.execute(:method => :post, :url => options_endpoint + '?key=' + GcxApi.key, :payload => options, :timeout => -1) { |response, request, result, &block|
+    RestClient::Request.execute(:method => :post, :url => options_endpoint, :payload => options, :timeout => -1) { |response, request, result, &block|
       Rails.logger.debug request
       Rails.logger.debug result.inspect
       # check for error response
